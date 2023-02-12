@@ -3,20 +3,25 @@ import 'dart:io';
 import 'package:facebook_audience_network/facebook_audience_network.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:qrscan/view/home.dart';
+import 'package:sqflite/sqflite.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-late GetStorage storageBox;
-
+late Database myDatabase;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // await GetStorage.init();
-  // storageBox = GetStorage();
-  FacebookAudienceNetwork.init(
-      // testingId: "37b1da9d-b48c-4103-a393-2e095e734bd6", //optional
-      // iOSAdvertiserTrackingEnabled: true //default false
-      );
+  var databasesPath = await getDatabasesPath();
+
+  myDatabase = await openDatabase(
+    '$databasesPath/allScans.db',
+    version: 1,
+    onCreate: (Database db, int version) async {
+      await db.execute(
+          'CREATE TABLE AllScans (id INTEGER PRIMARY KEY,scannedOn varchar2 NOT NULL,codeFormat varchar NOT NULL, result varchar2 NOT NULL,type varchar2 NOT NULL)');
+    },
+  );
+
+  FacebookAudienceNetwork.init();
   runApp(const MyApp());
 }
 

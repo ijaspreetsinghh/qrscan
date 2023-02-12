@@ -1,10 +1,8 @@
 import 'package:clipboard/clipboard.dart';
 import 'package:facebook_audience_network/ad/ad_banner.dart';
+import 'package:facebook_audience_network/ad/ad_interstitial.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/container.dart';
-import 'package:flutter/src/widgets/framework.dart';
 import 'package:intl/intl.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qrscan/main.dart';
 import 'package:qrscan/styles/app_colors.dart';
 import 'package:get/get.dart';
@@ -13,10 +11,14 @@ import 'package:share_plus/share_plus.dart';
 class QrDetailsPage extends StatefulWidget {
   const QrDetailsPage({
     super.key,
-    required this.barcode,
+    required this.result,
+    required this.codeFormat,
     required this.dateTime,
+    required this.type,
   });
-  final Barcode barcode;
+  final String codeFormat;
+  final String result;
+  final String type;
   final DateTime dateTime;
 
   @override
@@ -26,6 +28,14 @@ class QrDetailsPage extends StatefulWidget {
 class _QrDetailsPageState extends State<QrDetailsPage> {
   @override
   void initState() {
+    FacebookInterstitialAd.loadInterstitialAd(
+      placementId: "467441950932019_922610398748503",
+      listener: (result, value) {
+        if (result == InterstitialAdResult.LOADED)
+          FacebookInterstitialAd.showInterstitialAd();
+      },
+    );
+
     super.initState();
   }
 
@@ -69,7 +79,7 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                         color: AppColors.mediumDark),
                   ),
                   Text(
-                    widget.barcode.type.name.capitalizeFirst.toString(),
+                    widget.type.capitalizeFirst.toString(),
                     style: nunitoTextStyle.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -105,7 +115,7 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                         color: AppColors.mediumDark),
                   ),
                   Text(
-                    widget.barcode.format.name.toUpperCase(),
+                    widget.codeFormat.toUpperCase(),
                     style: nunitoTextStyle.copyWith(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
@@ -131,7 +141,7 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                   color: AppColors.primary.withOpacity(.1),
                 ),
                 child: SelectableText(
-                  widget.barcode.rawValue.toString(),
+                  widget.result.toString(),
                   style: nunitoTextStyle.copyWith(
                       fontWeight: FontWeight.w700,
                       fontSize: 18,
@@ -143,12 +153,11 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     SizedBox(
-                      child: widget.barcode.rawValue.toString().isURL
+                      child: widget.result.toString().isURL
                           ? InkWell(
                               onTap: () {
                                 openUrl(
-                                    url: Uri.parse(
-                                        widget.barcode.rawValue.toString()));
+                                    url: Uri.parse(widget.result.toString()));
                               },
                               child: Column(
                                 children: [
@@ -171,7 +180,7 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                               onTap: () {
                                 openUrl(
                                     url: Uri.parse(
-                                        'https://www.google.co.in/search?q=${widget.barcode.rawValue.toString()}'));
+                                        'https://www.google.co.in/search?q=${widget.result.toString()}'));
                               },
                               child: Column(
                                 children: [
@@ -193,7 +202,7 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                     ).marginOnly(right: 24),
                     InkWell(
                       onTap: () {
-                        Share.share(widget.barcode.rawValue.toString());
+                        Share.share(widget.result.toString());
                       },
                       child: Column(
                         children: [
@@ -214,9 +223,7 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                     ),
                     InkWell(
                       onTap: () {
-                        FlutterClipboard.copy(
-                                widget.barcode.rawValue.toString())
-                            .then(
+                        FlutterClipboard.copy(widget.result.toString()).then(
                           (value) => Get.showSnackbar(
                             GetSnackBar(
                               messageText: Text(
@@ -252,8 +259,8 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                 );
               }),
               FacebookBannerAd(
-                placementId: "467441950932019_554989958843884",
-                bannerSize: BannerSize.LARGE,
+                placementId: "467441950932019_922608378748705",
+                bannerSize: BannerSize.MEDIUM_RECTANGLE,
                 keepAlive: true,
                 listener: (result, value) {
                   switch (result) {

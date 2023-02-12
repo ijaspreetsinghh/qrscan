@@ -7,6 +7,8 @@ import 'package:qrscan/styles/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:qrscan/view/details.dart';
 
+import '../main.dart';
+
 class QrScanner extends StatelessWidget {
   final isScanning = true.obs;
 
@@ -30,17 +32,24 @@ class QrScanner extends StatelessWidget {
                       child: MobileScanner(
                         controller: mobileScannerController,
                         allowDuplicates: true,
-                        onDetect: (barcode, args) {
+                        onDetect: (barcode, args) async {
                           if (barcode.rawValue != null) {
                             // final String code = barcode.rawValue!;
                             mobileScannerController.stop();
                             isScanning.value = false;
+                            final now = DateTime.now();
                             Get.to(
                                 () => QrDetailsPage(
-                                      barcode: barcode,
-                                      dateTime: DateTime.now(),
+                                      codeFormat: barcode.format.name,
+                                      result: barcode.rawValue!,
+                                      type: barcode.type.name,
+                                      dateTime: now,
                                     ),
                                 transition: Transition.rightToLeft);
+                            await myDatabase.transaction((txn) async {
+                              await txn.rawInsert(
+                                  "INSERT INTO AllScans(scannedOn,codeFormat,result,type) VALUES ( '${now.millisecondsSinceEpoch.toString()}', '${barcode.format.name.toString()}','${barcode.rawValue.toString()}','${barcode.type.name.toString()}' )");
+                            });
                           }
                         },
                       )),
