@@ -17,6 +17,7 @@ class History extends StatefulWidget {
 }
 
 class _HistoryState extends State<History> {
+  RxInt page = 0.obs;
   @override
   void initState() {
     // readAllScans();
@@ -80,6 +81,7 @@ class _HistoryState extends State<History> {
                       decoration: BoxDecoration(
                           color: AppColors.primary.withOpacity(.1)),
                       child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Text(
                             snapshot.data![index]['result'].toString(),
