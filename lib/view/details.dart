@@ -29,7 +29,7 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
   @override
   void initState() {
     FacebookInterstitialAd.loadInterstitialAd(
-      placementId: "467441950932019_922610398748503",
+      placementId: "467441950932019_470029137339967",
       listener: (result, value) {
         if (result == InterstitialAdResult.LOADED)
           FacebookInterstitialAd.showInterstitialAd();
@@ -259,7 +259,7 @@ class _QrDetailsPageState extends State<QrDetailsPage> {
                 );
               }),
               FacebookBannerAd(
-                placementId: "467441950932019_922608378748705",
+                placementId: "467441950932019_554989958843884",
                 bannerSize: BannerSize.MEDIUM_RECTANGLE,
                 keepAlive: true,
                 listener: (result, value) {
