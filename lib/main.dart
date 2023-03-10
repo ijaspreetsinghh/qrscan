@@ -22,8 +22,6 @@ BannerAd historyBanner = BannerAd(
     listener: BannerAdListener(),
     request: AdRequest());
 
-BannerAd? belowScannerBanner;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   MobileAds.instance.initialize();

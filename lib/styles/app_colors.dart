@@ -7,7 +7,7 @@ class AppColors {
   static const navyBlue = Color(0xff1f2045);
   static const grey = Color(0xffa7a9b7);
   static const transparent = Colors.transparent;
-  static const white = Color(0xffffffff);
+  static const white = Colors.white;
 }
 
 const soraLight =

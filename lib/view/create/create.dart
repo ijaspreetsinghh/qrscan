@@ -23,28 +23,28 @@ class CreateQrCode extends StatefulWidget {
 class _CreateQrCodeState extends State<CreateQrCode> {
   final CreateQrController controller = Get.put(CreateQrController());
   ScreenshotController screenshotController = ScreenshotController();
-
+  BannerAd? belowCreateBanner;
   @override
   void initState() {
     controller.qrText.text = controller.qrValue.value;
 
-    belowScannerBanner = BannerAd(
+    belowCreateBanner = BannerAd(
         size: AdSize.banner,
-        adUnitId: 'ca-app-pub-8262174744018997/3415600822',
+        adUnitId: 'ca-app-pub-8262174744018997/7331645169',
         listener: BannerAdListener(
           onAdFailedToLoad: (ad, error) {
             print(error);
           },
         ),
         request: AdRequest());
-    belowScannerBanner!.load();
+    belowCreateBanner!.load();
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     final AdWidget adWidget = AdWidget(
-      ad: belowScannerBanner!,
+      ad: belowCreateBanner!,
     );
     final sfQR = Obx(() => SfBarcodeGenerator(
           value: controller.qrValue.value,
@@ -52,8 +52,8 @@ class _CreateQrCodeState extends State<CreateQrCode> {
         ));
     final Container adContainer = Container(
       child: adWidget,
-      width: belowScannerBanner!.size.width.toDouble(),
-      height: belowScannerBanner!.size.height.toDouble(),
+      width: belowCreateBanner!.size.width.toDouble(),
+      height: belowCreateBanner!.size.height.toDouble(),
     );
     return Scaffold(
       resizeToAvoidBottomInset: false,
