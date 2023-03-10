@@ -1,15 +1,32 @@
 import 'dart:io';
 
-import 'package:facebook_audience_network/facebook_audience_network.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:qrscan/view/home.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:qrscan/view/create/create.dart';
+import 'package:qrscan/view/home/home.dart';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 late Database myDatabase;
+BannerAd resultBanner = BannerAd(
+    size: AdSize.fullBanner,
+    adUnitId: 'ca-app-pub-8262174744018997/5170431975',
+    listener: BannerAdListener(),
+    request: AdRequest());
+
+BannerAd historyBanner = BannerAd(
+    size: AdSize.fullBanner,
+    adUnitId: 'ca-app-pub-8262174744018997/2244336999',
+    listener: BannerAdListener(),
+    request: AdRequest());
+
+BannerAd? belowScannerBanner;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  MobileAds.instance.initialize();
   var databasesPath = await getDatabasesPath();
 
   myDatabase = await openDatabase(
@@ -21,7 +38,6 @@ void main() async {
     },
   );
 
-  FacebookAudienceNetwork.init();
   runApp(const MyApp());
 }
 
@@ -40,10 +56,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return const GetMaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'QR Scanner',
-      home: QrHomePage(),
+      title: 'QR Code',
+      home: HomePage(),
     );
   }
 }
