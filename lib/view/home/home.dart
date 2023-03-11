@@ -10,7 +10,7 @@ import 'package:qrscan/view/scan/scan.dart';
 class HomePage extends StatelessWidget {
   HomePage({super.key});
   final RxInt currentIndex = 2.obs;
-
+  final ScanController scanController = Get.put(ScanController());
   final pages = [
     CreateQrCode(),
     ScannerPage(),
@@ -39,7 +39,7 @@ class HomePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: rowSize.maxWidth / 4,
+                  width: rowSize.maxWidth / 3,
                   child: InkWell(
                     onTap: () {
                       currentIndex.value = 0;
@@ -68,7 +68,7 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: rowSize.maxWidth / 4,
+                  width: rowSize.maxWidth / 3,
                   child: InkWell(
                     onTap: () {
                       currentIndex.value = 1;
@@ -97,7 +97,7 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  width: rowSize.maxWidth / 4,
+                  width: rowSize.maxWidth / 3,
                   child: InkWell(
                     onTap: () {
                       currentIndex.value = 2;
@@ -106,8 +106,8 @@ class HomePage extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Obx(() => SvgPicture.asset(
-                              // ignore: deprecated_member_use
                               'assets/images/history.svg',
+                              // ignore: deprecated_member_use
                               color: currentIndex.value == 2
                                   ? AppColors.primary
                                   : AppColors.dark,
@@ -125,34 +125,36 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(
-                  width: rowSize.maxWidth / 4,
-                  child: InkWell(
-                    onTap: () {
-                      currentIndex.value = 3;
-                    },
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Obx(() => SvgPicture.asset(
-                              'assets/images/setting.svg',
-                              color: currentIndex.value == 3
-                                  ? AppColors.primary
-                                  : AppColors.dark,
-                              height: 18,
-                            )).marginOnly(bottom: 4),
-                        Obx(() => Text(
-                              'Settings',
-                              style: soraBold.copyWith(
-                                  fontSize: 11,
-                                  color: currentIndex.value == 3
-                                      ? AppColors.primary
-                                      : AppColors.dark),
-                            ))
-                      ],
-                    ),
-                  ),
-                ),
+                // SizedBox(
+                //   width: rowSize.maxWidth / 4,
+                //   child: InkWell(
+                //     onTap: () {
+                //       currentIndex.value = 3;
+                //     },
+                //     child: Column(
+                //       mainAxisSize: MainAxisSize.min,
+                //       children: [
+                //         Obx(() => SvgPicture.asset(
+                //               'assets/images/setting.svg',
+
+                //               // ignore: deprecated_member_use
+                //               color: currentIndex.value == 3
+                //                   ? AppColors.primary
+                //                   : AppColors.dark,
+                //               height: 18,
+                //             )).marginOnly(bottom: 4),
+                //         Obx(() => Text(
+                //               'Settings',
+                //               style: soraBold.copyWith(
+                //                   fontSize: 11,
+                //                   color: currentIndex.value == 3
+                //                       ? AppColors.primary
+                //                       : AppColors.dark),
+                //             ))
+                //       ],
+                //     ),
+                //   ),
+                // ),
               ],
             );
           }),

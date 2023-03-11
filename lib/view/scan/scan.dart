@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
@@ -9,9 +7,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qrscan/styles/app_colors.dart';
 import 'package:qrscan/styles/overlays.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:qrscan/view/history/qr_details.dart';
 
 import '../../main.dart';
+
+class ScanController extends GetxController {
+  MobileScannerController mobileScannerController = MobileScannerController(
+    torchEnabled: false,
+    facing: CameraFacing.back,
+  );
+}
 
 class ScannerPage extends StatefulWidget {
   ScannerPage({super.key});
@@ -24,10 +29,7 @@ class _ScannerPageState extends State<ScannerPage>
     with SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
 
-  MobileScannerController mobileScannerController = MobileScannerController(
-    torchEnabled: false,
-    facing: CameraFacing.back,
-  );
+  final ScanController scanController = Get.put(ScanController());
   RxDouble zoomFactor = 0.0.obs;
   BannerAd? belowScannerBanner;
   @override
@@ -69,15 +71,6 @@ class _ScannerPageState extends State<ScannerPage>
         ),
         elevation: 0,
         backgroundColor: AppColors.white,
-        actions: [
-          Container(
-            child: Icon(
-              Icons.info_outline_rounded,
-              color: AppColors.dark,
-              size: 24,
-            ),
-          ).marginOnly(right: 16)
-        ],
       ),
       body: LayoutBuilder(builder: (context, size) {
         return ListView(
@@ -94,7 +87,8 @@ class _ScannerPageState extends State<ScannerPage>
                       borderRadius: BorderRadius.circular(50)),
                   child: InkWell(
                     child: ValueListenableBuilder(
-                      valueListenable: mobileScannerController.torchState,
+                      valueListenable:
+                          scanController.mobileScannerController.torchState,
                       builder: (context, state, child) {
                         switch (state) {
                           case TorchState.off:
@@ -104,12 +98,12 @@ class _ScannerPageState extends State<ScannerPage>
                                   'assets/images/flash_off.svg',
                                   height: 24,
                                   // ignore: deprecated_member_use
-                                  color: AppColors.primary,
+                                  color: AppColors.dark,
                                 ).marginOnly(bottom: 8),
                                 Text(
                                   'Flash Off',
                                   style: soraSemibold.copyWith(
-                                      fontSize: 12, color: AppColors.primary),
+                                      fontSize: 12, color: AppColors.dark),
                                 )
                               ],
                             );
@@ -120,19 +114,20 @@ class _ScannerPageState extends State<ScannerPage>
                                   'assets/images/flash_on.svg',
                                   height: 24,
                                   // ignore: deprecated_member_use
-                                  color: AppColors.primary,
+                                  color: AppColors.dark,
                                 ).marginOnly(bottom: 8),
                                 Text(
                                   'Flash On',
                                   style: soraSemibold.copyWith(
-                                      fontSize: 12, color: AppColors.primary),
+                                      fontSize: 12, color: AppColors.dark),
                                 )
                               ],
                             );
                         }
                       },
                     ),
-                    onTap: () => mobileScannerController.toggleTorch(),
+                    onTap: () =>
+                        scanController.mobileScannerController.toggleTorch(),
                   ),
                 ),
                 Container(
@@ -147,7 +142,8 @@ class _ScannerPageState extends State<ScannerPage>
                             source: ImageSource.gallery,
                           );
                           if (pickedFile != null) {
-                            final resp = await mobileScannerController
+                            final resp = await scanController
+                                .mobileScannerController
                                 .analyzeImage(pickedFile.path);
                             if (!resp) {
                               showSnackbar(
@@ -171,12 +167,13 @@ class _ScannerPageState extends State<ScannerPage>
                           SvgPicture.asset(
                             'assets/images/image.svg',
                             height: 24,
-                            color: AppColors.primary,
+                            // ignore: deprecated_member_use
+                            color: AppColors.dark,
                           ).marginOnly(bottom: 8),
                           Text(
                             'Image Scan',
                             style: soraSemibold.copyWith(
-                                fontSize: 12, color: AppColors.primary),
+                                fontSize: 12, color: AppColors.dark),
                           )
                         ],
                       )),
@@ -190,25 +187,30 @@ class _ScannerPageState extends State<ScannerPage>
                     height: size.maxWidth - 40,
                     width: size.maxWidth - 40,
                     child: MobileScanner(
-                      controller: mobileScannerController,
+                      controller: scanController.mobileScannerController,
                       onDetect: (barcode) async {
                         if (barcode.barcodes.first.rawValue != null) {
                           // final String code = barcode.rawValue!;
-                          // mobileScannerController.stop();
+                          scanController.mobileScannerController.stop();
 
                           final now = DateTime.now();
-                          // Get.to(
-                          //     () => QrDetailsPage(
-                          //           codeFormat: barcode.format.name,
-                          //           result: barcode.rawValue!,
-                          //           type: barcode.type.name,
-                          //           dateTime: now,
-                          //         ),
-                          //     transition: Transition.rightToLeft);
+
                           await myDatabase.transaction((txn) async {
                             await txn.rawInsert(
-                                "INSERT INTO AllScans(scannedOn,codeFormat,result,type) VALUES ( '${now.millisecondsSinceEpoch.toString()}', '${barcode.barcodes.first.format.name.toString()}','${barcode.barcodes.first.rawValue.toString()}','${barcode.barcodes.first.type.name.toString()}' )");
+                                "INSERT INTO AllScans(dateTime,codeFormat,result,colorHxDVal) VALUES ( '${now.toIso8601String()}', '${barcode.barcodes.first.format.name.toString()}','${barcode.barcodes.first.rawValue.toString()}','0xff7250f2' )");
                           });
+                          Get.to(
+                              () => QrDetails(
+                                    format: barcode.barcodes.first.format.name
+                                        .toString(),
+                                    value: barcode.barcodes.first.rawValue
+                                        .toString(),
+                                    color: Color(0xff7250f2),
+                                    dateTime: now,
+                                    id: 0,
+                                  ),
+                              transition: Transition.rightToLeft);
+                          scanController.mobileScannerController.start();
                         }
                       },
                     )),
@@ -230,7 +232,8 @@ class _ScannerPageState extends State<ScannerPage>
                         activeColor: AppColors.primary,
                         onChanged: (value) {
                           zoomFactor.value = value;
-                          mobileScannerController.setZoomScale(value);
+                          scanController.mobileScannerController
+                              .setZoomScale(value);
                         },
                       )),
                 ),

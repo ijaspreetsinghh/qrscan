@@ -2,8 +2,6 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:qrscan/main.dart';
@@ -30,7 +28,7 @@ class _CreateQrCodeState extends State<CreateQrCode> {
 
     belowCreateBanner = BannerAd(
         size: AdSize.largeBanner,
-        adUnitId: 'ca-app-pub-8262174744018997/7331645169',
+        adUnitId: 'ca-app-pub-8262174744018997/2244336999',
         listener: BannerAdListener(
           onAdFailedToLoad: (ad, error) {
             print(error);
@@ -68,15 +66,6 @@ class _CreateQrCodeState extends State<CreateQrCode> {
           style: soraSemibold.copyWith(fontSize: 24, color: AppColors.white),
         ),
         elevation: 0,
-        actions: [
-          Container(
-            child: Icon(
-              Icons.info_outline_rounded,
-              color: AppColors.dark,
-              size: 24,
-            ),
-          ).marginOnly(right: 16)
-        ],
         backgroundColor: AppColors.primary,
       ),
       body: LayoutBuilder(builder: (context, size) {
@@ -209,9 +198,6 @@ class _CreateQrCodeState extends State<CreateQrCode> {
                               ColorPickerBoxForCreateQr(
                                 color: Color(0xff50f3cc),
                               ),
-                              ColorPickerBoxForCreateQr(
-                                color: Color(0xff7250f2),
-                              )
                             ],
                           ),
                           Divider(
@@ -227,6 +213,10 @@ class _CreateQrCodeState extends State<CreateQrCode> {
                                   height: 56,
                                   decoration: BoxDecoration(),
                                   child: InkWell(
+                                    onTap: () {
+                                      controller.qrText.clear();
+                                      controller.qrValue.value = '';
+                                    },
                                     child: Text(
                                       'Cancel',
                                       style: soraBold.copyWith(
@@ -316,8 +306,16 @@ class _CreateQrCodeState extends State<CreateQrCode> {
 
                                                 await Share.shareXFiles(
                                                     [XFile(imagePath.path)]);
+                                                final now = DateTime.now();
+                                                await myDatabase
+                                                    .transaction((txn) async {
+                                                  await txn.rawInsert(
+                                                      "INSERT INTO AllScans(dateTime,codeFormat,result,colorHxDVal) VALUES ( '${now.toIso8601String()}', 'qrcode','${controller.qrValue.value}','${controller.bgColor.value.toString().substring(6, 16)}' )");
+                                                });
                                               }
                                             });
+                                            controller.qrText.clear();
+                                            controller.qrValue.value = '';
                                           }
                                         },
                                         child: Text(

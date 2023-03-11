@@ -1,9 +1,6 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:qrscan/view/create/create.dart';
 import 'package:qrscan/view/home/home.dart';
 
 import 'package:sqflite/sqflite.dart';
@@ -15,22 +12,6 @@ BannerAd resultBanner = BannerAd(
     adUnitId: 'ca-app-pub-8262174744018997/5170431975',
     listener: BannerAdListener(),
     request: AdRequest());
-final codesSupported = [
-  'all',
-  'code128',
-  'code39',
-  'code93',
-  'codebar',
-  'dataMatrix',
-  'ean13',
-  'ean8',
-  'itf',
-  'qrCode',
-  'upcA',
-  'upcE',
-  'pdf417',
-  'aztec' 'unknown',
-];
 
 BannerAd historyBanner = BannerAd(
     size: AdSize.fullBanner,
@@ -48,7 +29,7 @@ void main() async {
     version: 1,
     onCreate: (Database db, int version) async {
       await db.execute(
-          'CREATE TABLE AllScans (id INTEGER PRIMARY KEY,scannedOn varchar2 NOT NULL,codeFormat varchar NOT NULL, result varchar2 NOT NULL,type varchar2 NOT NULL)');
+          'CREATE TABLE AllScans (id INTEGER PRIMARY KEY,dateTime varchar2 NOT NULL,codeFormat varchar NOT NULL, result varchar2 NOT NULL,colorHxDVal varchar2 NOT NULL)');
     },
   );
 
