@@ -5,8 +5,11 @@ import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qrscan/styles/app_colors.dart';
+import 'package:qrscan/styles/overlays.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../../main.dart';
 
@@ -17,10 +20,15 @@ class ScannerPage extends StatefulWidget {
   State<ScannerPage> createState() => _ScannerPageState();
 }
 
-class _ScannerPageState extends State<ScannerPage> {
-  final MobileScannerController mobileScannerController =
-      MobileScannerController();
+class _ScannerPageState extends State<ScannerPage>
+    with SingleTickerProviderStateMixin {
+  final ImagePicker _picker = ImagePicker();
 
+  MobileScannerController mobileScannerController = MobileScannerController(
+    torchEnabled: false,
+    facing: CameraFacing.back,
+  );
+  RxDouble zoomFactor = 0.0.obs;
   BannerAd? belowScannerBanner;
   @override
   void initState() {
@@ -53,18 +61,28 @@ class _ScannerPageState extends State<ScannerPage> {
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle(
             statusBarBrightness: Brightness.light,
+            statusBarIconBrightness: Brightness.dark,
             statusBarColor: AppColors.transparent),
         title: Text(
           'Scan',
-          style: soraMedium.copyWith(fontSize: 20, color: AppColors.white),
+          style: soraSemibold.copyWith(fontSize: 24, color: AppColors.dark),
         ),
         elevation: 0,
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors.white,
+        actions: [
+          Container(
+            child: Icon(
+              Icons.info_outline_rounded,
+              color: AppColors.dark,
+              size: 24,
+            ),
+          ).marginOnly(right: 16)
+        ],
       ),
       body: LayoutBuilder(builder: (context, size) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        return ListView(
+          // crossAxisAlignment: CrossAxisAlignment.stretch,
+          // mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -86,12 +104,12 @@ class _ScannerPageState extends State<ScannerPage> {
                                   'assets/images/flash_off.svg',
                                   height: 24,
                                   // ignore: deprecated_member_use
-                                  color: AppColors.dark,
+                                  color: AppColors.primary,
                                 ).marginOnly(bottom: 8),
                                 Text(
                                   'Flash Off',
-                                  style: soraBold.copyWith(
-                                      fontSize: 12, color: AppColors.dark),
+                                  style: soraSemibold.copyWith(
+                                      fontSize: 12, color: AppColors.primary),
                                 )
                               ],
                             );
@@ -102,12 +120,12 @@ class _ScannerPageState extends State<ScannerPage> {
                                   'assets/images/flash_on.svg',
                                   height: 24,
                                   // ignore: deprecated_member_use
-                                  color: AppColors.dark,
+                                  color: AppColors.primary,
                                 ).marginOnly(bottom: 8),
                                 Text(
                                   'Flash On',
-                                  style: soraBold.copyWith(
-                                      fontSize: 12, color: AppColors.dark),
+                                  style: soraSemibold.copyWith(
+                                      fontSize: 12, color: AppColors.primary),
                                 )
                               ],
                             );
@@ -123,22 +141,48 @@ class _ScannerPageState extends State<ScannerPage> {
                       color: AppColors.white,
                       borderRadius: BorderRadius.circular(50)),
                   child: InkWell(
+                      onTap: () async {
+                        try {
+                          final XFile? pickedFile = await _picker.pickImage(
+                            source: ImageSource.gallery,
+                          );
+                          if (pickedFile != null) {
+                            final resp = await mobileScannerController
+                                .analyzeImage(pickedFile.path);
+                            if (!resp) {
+                              showSnackbar(
+                                  snackbarStatus: MySnackbarStatus.error,
+                                  title: 'No code found',
+                                  msg:
+                                      'Please choose image with qr/barcode in it.',
+                                  milliseconds: 3000);
+                            }
+                          }
+                        } catch (e) {
+                          showSnackbar(
+                              snackbarStatus: MySnackbarStatus.error,
+                              title: 'No code found',
+                              msg: 'Please choose image with qr/barcode in it.',
+                              milliseconds: 3000);
+                        }
+                      },
                       child: Column(
-                    children: [
-                      SvgPicture.asset(
-                        'assets/images/image.svg',
-                        height: 24,
-                      ).marginOnly(bottom: 8),
-                      Text(
-                        'Image SCan',
-                        style: soraBold.copyWith(
-                            fontSize: 12, color: AppColors.dark),
-                      )
-                    ],
-                  )),
+                        children: [
+                          SvgPicture.asset(
+                            'assets/images/image.svg',
+                            height: 24,
+                            color: AppColors.primary,
+                          ).marginOnly(bottom: 8),
+                          Text(
+                            'Image Scan',
+                            style: soraSemibold.copyWith(
+                                fontSize: 12, color: AppColors.primary),
+                          )
+                        ],
+                      )),
                 ),
               ],
-            ),
+            ).marginOnly(top: 20, bottom: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -147,9 +191,8 @@ class _ScannerPageState extends State<ScannerPage> {
                     width: size.maxWidth - 40,
                     child: MobileScanner(
                       controller: mobileScannerController,
-                      allowDuplicates: true,
-                      onDetect: (barcode, args) async {
-                        if (barcode.rawValue != null) {
+                      onDetect: (barcode) async {
+                        if (barcode.barcodes.first.rawValue != null) {
                           // final String code = barcode.rawValue!;
                           // mobileScannerController.stop();
 
@@ -164,14 +207,42 @@ class _ScannerPageState extends State<ScannerPage> {
                           //     transition: Transition.rightToLeft);
                           await myDatabase.transaction((txn) async {
                             await txn.rawInsert(
-                                "INSERT INTO AllScans(scannedOn,codeFormat,result,type) VALUES ( '${now.millisecondsSinceEpoch.toString()}', '${barcode.format.name.toString()}','${barcode.rawValue.toString()}','${barcode.type.name.toString()}' )");
+                                "INSERT INTO AllScans(scannedOn,codeFormat,result,type) VALUES ( '${now.millisecondsSinceEpoch.toString()}', '${barcode.barcodes.first.format.name.toString()}','${barcode.barcodes.first.rawValue.toString()}','${barcode.barcodes.first.type.name.toString()}' )");
                           });
                         }
                       },
                     )),
               ],
             ),
-            adContainer
+            Row(
+              children: [
+                // ignore: deprecated_member_use
+                SvgPicture.asset(
+                  'assets/images/zoom_out.svg',
+                  height: 20,
+                  // ignore: deprecated_member_use
+                  color: AppColors.dark,
+                ),
+
+                Expanded(
+                  child: Obx(() => Slider(
+                        value: zoomFactor.value,
+                        activeColor: AppColors.primary,
+                        onChanged: (value) {
+                          zoomFactor.value = value;
+                          mobileScannerController.setZoomScale(value);
+                        },
+                      )),
+                ),
+                SvgPicture.asset(
+                  'assets/images/zoom_in.svg',
+                  height: 20,
+                  // ignore: deprecated_member_use
+                  color: AppColors.dark,
+                ),
+              ],
+            ).marginSymmetric(horizontal: 20, vertical: 20),
+            adContainer.marginOnly(bottom: 24),
           ],
         );
       }),

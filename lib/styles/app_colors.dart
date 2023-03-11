@@ -7,16 +7,31 @@ class AppColors {
   static const navyBlue = Color(0xff1f2045);
   static const grey = Color(0xffa7a9b7);
   static const transparent = Colors.transparent;
-  static const white = Colors.white;
+  static const white = Color(0xfffffeff);
 }
 
-const soraLight =
-    TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.dark);
-const soraRegular =
-    TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.dark);
-const soraMedium =
-    TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.dark);
-const soraSemibold =
-    TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.dark);
-const soraBold =
-    TextStyle(fontFamily: 'Sora', fontSize: 14, color: AppColors.dark);
+const soraLight = TextStyle(
+    fontFamily: 'Sora',
+    fontSize: 14,
+    color: AppColors.dark,
+    fontWeight: FontWeight.w300);
+const soraRegular = TextStyle(
+    fontFamily: 'Sora',
+    fontSize: 14,
+    color: AppColors.dark,
+    fontWeight: FontWeight.w400);
+const soraMedium = TextStyle(
+    fontFamily: 'Sora',
+    fontSize: 14,
+    color: AppColors.dark,
+    fontWeight: FontWeight.w500);
+const soraSemibold = TextStyle(
+    fontFamily: 'Sora',
+    fontSize: 14,
+    color: AppColors.dark,
+    fontWeight: FontWeight.w600);
+const soraBold = TextStyle(
+    fontFamily: 'Sora',
+    fontSize: 14,
+    color: AppColors.dark,
+    fontWeight: FontWeight.w700);

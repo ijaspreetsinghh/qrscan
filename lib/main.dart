@@ -15,6 +15,22 @@ BannerAd resultBanner = BannerAd(
     adUnitId: 'ca-app-pub-8262174744018997/5170431975',
     listener: BannerAdListener(),
     request: AdRequest());
+final codesSupported = [
+  'all',
+  'code128',
+  'code39',
+  'code93',
+  'codebar',
+  'dataMatrix',
+  'ean13',
+  'ean8',
+  'itf',
+  'qrCode',
+  'upcA',
+  'upcE',
+  'pdf417',
+  'aztec' 'unknown',
+];
 
 BannerAd historyBanner = BannerAd(
     size: AdSize.fullBanner,

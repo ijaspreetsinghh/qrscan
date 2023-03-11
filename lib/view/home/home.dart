@@ -4,16 +4,17 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:qrscan/styles/app_colors.dart';
 import 'package:qrscan/view/create/create.dart';
+import 'package:qrscan/view/history/history.dart';
 import 'package:qrscan/view/scan/scan.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
-  final RxInt currentIndex = 1.obs;
+  final RxInt currentIndex = 2.obs;
 
   final pages = [
     CreateQrCode(),
     ScannerPage(),
-    Container(),
+    HistoryPage(),
     Container(),
   ];
 

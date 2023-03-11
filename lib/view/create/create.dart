@@ -29,7 +29,7 @@ class _CreateQrCodeState extends State<CreateQrCode> {
     controller.qrText.text = controller.qrValue.value;
 
     belowCreateBanner = BannerAd(
-        size: AdSize.banner,
+        size: AdSize.largeBanner,
         adUnitId: 'ca-app-pub-8262174744018997/7331645169',
         listener: BannerAdListener(
           onAdFailedToLoad: (ad, error) {
@@ -61,12 +61,22 @@ class _CreateQrCodeState extends State<CreateQrCode> {
       appBar: AppBar(
         systemOverlayStyle: SystemUiOverlayStyle(
             statusBarBrightness: Brightness.light,
+            statusBarIconBrightness: Brightness.light,
             statusBarColor: AppColors.transparent),
         title: Text(
           'Create',
-          style: soraMedium.copyWith(fontSize: 20, color: AppColors.white),
+          style: soraSemibold.copyWith(fontSize: 24, color: AppColors.white),
         ),
         elevation: 0,
+        actions: [
+          Container(
+            child: Icon(
+              Icons.info_outline_rounded,
+              color: AppColors.dark,
+              size: 24,
+            ),
+          ).marginOnly(right: 16)
+        ],
         backgroundColor: AppColors.primary,
       ),
       body: LayoutBuilder(builder: (context, size) {
@@ -328,8 +338,8 @@ class _CreateQrCodeState extends State<CreateQrCode> {
                       ),
                     ).marginSymmetric(horizontal: 24),
                     Container(
-                      height: 50,
-                      width: 320,
+                      // height: 100,
+                      // width: 320,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
                       ),
