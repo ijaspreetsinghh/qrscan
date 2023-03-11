@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 import 'package:clipboard/clipboard.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +8,8 @@ import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:qrscan/styles/overlays.dart';
+import 'package:screenshot/screenshot.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:syncfusion_flutter_barcodes/barcodes.dart';
 
 import '../../main.dart';
@@ -31,6 +35,8 @@ class QrDetails extends StatefulWidget {
 class _QrDetailsState extends State<QrDetails> {
   BannerAd? resultBanner;
   BannerAd? topResultBanner;
+
+  ScreenshotController screenshotController = ScreenshotController();
   @override
   void initState() {
     resultBanner = BannerAd(
@@ -270,35 +276,75 @@ class _QrDetailsState extends State<QrDetails> {
                     ],
                   ),
                 ),
-                Column(
-                  children: [
-                    SvgPicture.asset(
-                      'assets/images/share.svg',
-                      // ignore: deprecated_member_use
-                      color: AppColors.dark,
-                      height: 24,
-                    ).marginOnly(bottom: 8),
-                    Text(
-                      'Share',
-                      style: soraSemibold.copyWith(
-                          fontSize: 12, color: AppColors.dark),
-                    )
-                  ],
-                ),
-                Column(
-                  children: [
-                    SvgPicture.asset(
-                      'assets/images/download.svg',
-                      // ignore: deprecated_member_use
-                      color: AppColors.dark,
-                      height: 24,
-                    ).marginOnly(bottom: 8),
-                    Text(
-                      'Save',
-                      style: soraSemibold.copyWith(
-                          fontSize: 12, color: AppColors.dark),
-                    )
-                  ],
+                InkWell(
+                  onTap: () async {
+                    await screenshotController
+                        .captureFromWidget(Container(
+                      padding: EdgeInsets.all(24),
+                      color: AppColors.white,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 200,
+                            height: 200,
+                            alignment: AlignmentDirectional.center,
+                            decoration: BoxDecoration(
+                              color: widget.color,
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Container(
+                              height: 180,
+                              width: 180,
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                  color: AppColors.white,
+                                  borderRadius: BorderRadius.circular(10)),
+                              child: SfBarcodeGenerator(
+                                value: widget.value,
+                                symbology: QRCode(),
+                                barColor: AppColors.dark,
+                              ),
+                            ),
+                          ).marginOnly(bottom: 8),
+                          Text(
+                            widget.value,
+                            style: soraBold.copyWith(
+                                fontSize: 14, color: AppColors.dark),
+                          ),
+                        ],
+                      ),
+                    ))
+                        .then((Uint8List? image) async {
+                      if (image != null) {
+                        final directory =
+                            await getApplicationDocumentsDirectory();
+                        final imagePath =
+                            await File('${directory.path}/${widget.value}.png')
+                                .create();
+                        await imagePath.writeAsBytes(image);
+
+                        await Share.shareXFiles([XFile(imagePath.path)]);
+                      }
+                    });
+                  },
+                  child: Column(
+                    children: [
+                      SvgPicture.asset(
+                        'assets/images/share.svg',
+                        // ignore: deprecated_member_use
+                        color: AppColors.dark,
+                        height: 24,
+                      ).marginOnly(bottom: 8),
+                      Text(
+                        'Share',
+                        style: soraSemibold.copyWith(
+                            fontSize: 12, color: AppColors.dark),
+                      )
+                    ],
+                  ),
                 ),
               ],
             ).marginOnly(bottom: 24),

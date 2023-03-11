@@ -94,6 +94,9 @@ class _CreateQrCodeState extends State<CreateQrCode> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    SizedBox(
+                      height: 20,
+                    ),
                     Container(
                       decoration: BoxDecoration(
                           color: AppColors.white,
