@@ -4,6 +4,54 @@ import 'package:qrscan/styles/app_colors.dart';
 
 enum MySnackbarStatus { success, info, error, warning }
 
+showLoader({required String text}) {
+  hideLoader();
+  Get.dialog(
+    useSafeArea: true,
+    name: 'Loader',
+    Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.white,
+            borderRadius: BorderRadius.circular(24),
+          ),
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(24),
+          constraints: const BoxConstraints(
+              maxHeight: 250, minHeight: 200, maxWidth: 500, minWidth: 250),
+          child: Material(
+            color: AppColors.transparent,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(
+                  height: 50,
+                  width: 50,
+                  child: CircularProgressIndicator(
+                      valueColor:
+                          AlwaysStoppedAnimation<Color>(AppColors.primary)),
+                ).marginOnly(bottom: 24),
+                Text(
+                  text,
+                  style: soraBold.copyWith(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                      color: AppColors.dark),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 hideLoader() {
   if (Get.isOverlaysOpen || Get.isDialogOpen! || Get.isSnackbarOpen) {
     Get.back();

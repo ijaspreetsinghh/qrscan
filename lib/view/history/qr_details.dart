@@ -11,7 +11,7 @@ import 'package:qrscan/styles/overlays.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:syncfusion_flutter_barcodes/barcodes.dart';
-
+import 'package:uuid/uuid.dart';
 import '../../main.dart';
 import '../../styles/app_colors.dart';
 
@@ -35,7 +35,7 @@ class QrDetails extends StatefulWidget {
 class _QrDetailsState extends State<QrDetails> {
   BannerAd? resultBanner;
   BannerAd? topResultBanner;
-
+  final Uuid uuid = Uuid();
   ScreenshotController screenshotController = ScreenshotController();
   @override
   void initState() {
@@ -93,6 +93,7 @@ class _QrDetailsState extends State<QrDetails> {
             statusBarIconBrightness: Brightness.dark,
             statusBarColor: AppColors.transparent),
         leading: IconButton(
+          splashRadius: 22,
           icon: Icon(
             Icons.arrow_back_ios_new_rounded,
             color: AppColors.dark,
@@ -109,17 +110,31 @@ class _QrDetailsState extends State<QrDetails> {
         actions: [
           widget.id == 0
               ? SizedBox()
-              : InkWell(
-                  onTap: () {
-                    Get.back(result: true);
-                  },
-                  child: SvgPicture.asset(
-                    'assets/images/delete.svg',
-                    // ignore: deprecated_member_use
-                    color: AppColors.dark,
-                    height: 20,
-                  ),
-                ).marginOnly(right: 20),
+              : Row(
+                  children: [
+                    InkWell(
+                      // highlightColor: AppColors.primary,
+                      borderRadius: BorderRadius.circular(100),
+                      onTap: () {
+                        Get.back(result: true);
+                      },
+                      child: Container(
+                        width: 46,
+                        height: 46,
+                        alignment: AlignmentDirectional.center,
+                        child: SvgPicture.asset(
+                          'assets/images/delete.svg',
+                          // ignore: deprecated_member_use
+                          color: AppColors.dark,
+                          height: 20,
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 8,
+                    )
+                  ],
+                ),
         ],
         backgroundColor: AppColors.white,
       ),
@@ -131,16 +146,16 @@ class _QrDetailsState extends State<QrDetails> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  width: 200,
-                  height: 200,
+                  width: 220,
+                  height: 220,
                   alignment: AlignmentDirectional.center,
                   decoration: BoxDecoration(
                     color: widget.color,
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: Container(
-                    height: 180,
-                    width: 180,
+                    height: 200,
+                    width: 200,
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
                         color: AppColors.white,
@@ -153,6 +168,7 @@ class _QrDetailsState extends State<QrDetails> {
                   ),
                 ).marginOnly(bottom: 12),
                 SelectableText(widget.value,
+                        textAlign: TextAlign.center,
                         style: soraSemibold.copyWith(
                             fontSize: 14, color: AppColors.dark))
                     .marginSymmetric(horizontal: 20)
@@ -223,6 +239,7 @@ class _QrDetailsState extends State<QrDetails> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 InkWell(
+                  highlightColor: AppColors.white,
                   onTap: () {
                     if (widget.value.toString().isURL) {
                       openUrl(url: Uri.parse(widget.value.toString()));
@@ -251,6 +268,7 @@ class _QrDetailsState extends State<QrDetails> {
                   ),
                 ),
                 InkWell(
+                  highlightColor: AppColors.white,
                   onTap: () {
                     FlutterClipboard.copy(widget.value.toString()).then(
                       (value) => Get.showSnackbar(showSnackbar(
@@ -277,6 +295,7 @@ class _QrDetailsState extends State<QrDetails> {
                   ),
                 ),
                 InkWell(
+                  highlightColor: AppColors.white,
                   onTap: () async {
                     await screenshotController
                         .captureFromWidget(Container(
@@ -311,6 +330,7 @@ class _QrDetailsState extends State<QrDetails> {
                           ).marginOnly(bottom: 8),
                           Text(
                             widget.value,
+                            textAlign: TextAlign.center,
                             style: soraBold.copyWith(
                                 fontSize: 14, color: AppColors.dark),
                           ),
@@ -319,10 +339,11 @@ class _QrDetailsState extends State<QrDetails> {
                     ))
                         .then((Uint8List? image) async {
                       if (image != null) {
+                        final fileName = uuid.v4();
                         final directory =
                             await getApplicationDocumentsDirectory();
                         final imagePath =
-                            await File('${directory.path}/${widget.value}.png')
+                            await File('${directory.path}/$fileName.png')
                                 .create();
                         await imagePath.writeAsBytes(image);
 

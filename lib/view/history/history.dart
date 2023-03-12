@@ -16,7 +16,7 @@ Future<Widget> getHistoryAdBanner({
 }) async {
   bool isAdLoaded = false;
   final _listAd = BannerAd(
-      size: AdSize.largeBanner,
+      size: AdSize.banner,
       adUnitId: 'ca-app-pub-8262174744018997/2244336999',
       listener: BannerAdListener(
         onAdFailedToLoad: (ad, error) {
@@ -57,55 +57,12 @@ class _HistoryPageState extends State<HistoryPage> {
           'History',
           style: soraSemibold.copyWith(fontSize: 24, color: AppColors.dark),
         ),
-        // actions: [
-        //   InkWell(
-        //     onTap: () {
-        //       // showDateRangePicker(
-        //       //     context: context,
-        //       //     firstDate: historyController.firstDate.value,
-        //       //     lastDate: historyController.lastDate.value);
-        //     },
-        //     child: SvgPicture.asset(
-        //       'assets/images/calendar.svg',
-        //       height: 24,
-        //     ).marginOnly(right: 20),
-        //   )
-        // ],
         elevation: 0,
         backgroundColor: AppColors.white,
       ),
       backgroundColor: AppColors.white,
       body: Column(
         children: [
-          // TextFormField(
-          //   style: soraMedium.copyWith(fontSize: 14, color: AppColors.dark),
-          //   controller: historyController.searchText,
-          //   onChanged: (v) => historyController.searchVal.value = v,
-          //   decoration: InputDecoration(
-          //       filled: true,
-          //       // isDense: true,
-          //       hintText: 'Search',
-          //       hintStyle:
-          //           soraMedium.copyWith(fontSize: 14, color: AppColors.grey),
-          //       // ignore: deprecated_member_use
-          //       prefixIcon: Row(
-          //         mainAxisSize: MainAxisSize.min,
-          //         mainAxisAlignment: MainAxisAlignment.center,
-          //         children: [
-          //           SvgPicture.asset(
-          //             'assets/images/search.svg',
-          //             height: 20,
-
-          //             // ignore: deprecated_member_use
-          //             color: AppColors.grey,
-          //           ),
-          //         ],
-          //       ),
-          //       fillColor: AppColors.lightBg,
-          //       border: OutlineInputBorder(
-          //           borderRadius: BorderRadius.circular(10),
-          //           borderSide: BorderSide.none)),
-          // ).marginOnly(bottom: 16, right: 20, left: 20),
           Expanded(
             child: FutureBuilder(
                 future: myDatabase.rawQuery('SELECT * FROM AllScans'),
@@ -122,7 +79,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
                       // if we got our data
                     } else if (snapshot.hasData && snapshot.data != null) {
-                      List<Map<DateTime, List<dynamic>>> newData =
+                      RxList<Map<DateTime, List<dynamic>>> newData =
                           <Map<DateTime, List<dynamic>>>[].obs;
 
                       var groupByDate = groupBy(snapshot.data!,
@@ -147,80 +104,323 @@ class _HistoryPageState extends State<HistoryPage> {
                         });
                       });
 
-                      return Obx(() => ListView.builder(
-                            shrinkWrap: true,
-                            physics: BouncingScrollPhysics(),
-                            itemBuilder: (context, oIndex) => Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  DateFormat('dd MMMM, EEE')
-                                      .format(newData[oIndex].keys.first),
-                                  style: soraSemibold.copyWith(
-                                      color: AppColors.dark, fontSize: 20),
-                                ).marginOnly(left: 20, bottom: 16, top: 16),
-                                Column(
-                                  children: List.generate(
-                                      newData[oIndex].values.first.length,
-                                      (i) => QrHistoryViewComponent(
-                                          color: newData[oIndex]
-                                              .values
-                                              .first[i]['colorHxDVal']
-                                              .toString(),
-                                          id: int.tryParse(newData[oIndex]
-                                                  .values
-                                                  .first[i]['id']
-                                                  .toString()) ??
-                                              0,
-                                          codeFormat: newData[oIndex]
-                                              .values
-                                              .first[i]['codeFormat']
-                                              .toString(),
-                                          value: newData[oIndex]
-                                              .values
-                                              .first[i]['result']
-                                              .toString(),
-                                          deleter: () async {
-                                            await myDatabase
-                                                .transaction((txn) async {
-                                              await txn.rawInsert(
-                                                  "DELETE FROM AllScans where id=${int.tryParse(newData[oIndex].values.first[i]['id'].toString()) ?? 0}");
-                                            });
-                                            setState(() {});
-                                          },
-                                          dateTime: snapshot.data![oIndex]
-                                                  ['dateTime']
-                                              .toString())),
-                                ),
-                                FutureBuilder(
-                                    future:
-                                        getHistoryAdBanner(context: context),
-                                    builder: (BuildContext context, snapshot) {
-                                      if (snapshot.hasData) {
-                                        AdWidget ad = snapshot.data as AdWidget;
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
 
-                                        return Container(
-                                          height: 100,
-                                          child: ad,
-                                        );
-                                      } else {
-                                        return Container(
-                                            alignment: Alignment.topCenter,
-                                            margin:
-                                                const EdgeInsets.only(top: 20),
-                                            child:
-                                                const CircularProgressIndicator(
-                                              valueColor:
-                                                  AlwaysStoppedAnimation(
-                                                      AppColors.primary),
-                                              // value: 0.8,
-                                            ));
-                                      }
-                                    }).marginOnly(top: 10)
-                              ],
-                            ),
-                            itemCount: newData.length,
-                          ));
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+                      groupByDate.forEach((date, list) {
+                        newData.add({
+                          DateTime(
+                              int.parse(
+                                date.substring(0, 4),
+                              ),
+                              int.parse(
+                                date.substring(5, 7),
+                              ),
+                              int.parse(
+                                date.substring(8, 10),
+                              ),
+                              0,
+                              0,
+                              0,
+                              0,
+                              0): list
+                        });
+                      });
+
+                      return Obx(() {
+                        return newData.length < 1
+                            ? Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'No History',
+                                    style: soraSemibold.copyWith(
+                                        fontSize: 20, color: AppColors.dark),
+                                  ).marginOnly(bottom: 16),
+                                  Text(
+                                    'Try changing date of filters.',
+                                    style: soraMedium.copyWith(
+                                        fontSize: 14,
+                                        color: AppColors.dark.withOpacity(.5)),
+                                  ),
+                                ],
+                              )
+                            : ListView.builder(
+                                shrinkWrap: true,
+                                physics: BouncingScrollPhysics(),
+                                itemBuilder: (context, oIndex) => Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      DateFormat('dd MMMM, EEE')
+                                          .format(newData[oIndex].keys.first),
+                                      style: soraSemibold.copyWith(
+                                          color: AppColors.dark, fontSize: 20),
+                                    ).marginOnly(left: 20, bottom: 16, top: 16),
+                                    Column(
+                                      children: List.generate(
+                                          newData[oIndex].values.first.length,
+                                          (i) => QrHistoryViewComponent(
+                                              color: newData[oIndex]
+                                                  .values
+                                                  .first[i]['colorHxDVal']
+                                                  .toString(),
+                                              id: int.tryParse(newData[oIndex]
+                                                      .values
+                                                      .first[i]['id']
+                                                      .toString()) ??
+                                                  0,
+                                              codeFormat: newData[oIndex]
+                                                  .values
+                                                  .first[i]['codeFormat']
+                                                  .toString(),
+                                              value: newData[oIndex]
+                                                  .values
+                                                  .first[i]['result']
+                                                  .toString(),
+                                              deleter: () async {
+                                                await myDatabase
+                                                    .transaction((txn) async {
+                                                  await txn.rawInsert(
+                                                      "DELETE FROM AllScans where id=${int.tryParse(newData[oIndex].values.first[i]['id'].toString()) ?? 0}");
+                                                });
+                                                setState(() {});
+                                              },
+                                              dateTime: snapshot.data![oIndex]
+                                                      ['dateTime']
+                                                  .toString())),
+                                    ),
+                                  ],
+                                ),
+                                itemCount: newData.length,
+                              );
+                      });
                     }
                   }
                   return Center(
@@ -228,6 +428,26 @@ class _HistoryPageState extends State<HistoryPage> {
                   );
                 }),
           ),
+          FutureBuilder(
+              future: getHistoryAdBanner(context: context),
+              builder: (BuildContext context, snapshot) {
+                if (snapshot.hasData) {
+                  AdWidget ad = snapshot.data as AdWidget;
+
+                  return Container(
+                    height: 50,
+                    child: ad,
+                  );
+                } else {
+                  return Container(
+                      alignment: Alignment.topCenter,
+                      margin: const EdgeInsets.only(top: 20),
+                      child: const CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation(AppColors.primary),
+                        // value: 0.8,
+                      ));
+                }
+              }).marginOnly(top: 10)
         ],
       ),
     );
@@ -268,7 +488,7 @@ class QrHistoryViewComponent extends StatelessWidget {
         }
       },
       child: Container(
-        height: 100,
+        height: 120,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
@@ -294,8 +514,8 @@ class QrHistoryViewComponent extends StatelessWidget {
             ),
             child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
               SizedBox(
-                height: 80,
-                width: 80,
+                height: 100,
+                width: 100,
                 child: SfBarcodeGenerator(
                   value: value,
                   symbology: QRCode(),

@@ -11,13 +11,6 @@ import 'package:qrscan/view/history/qr_details.dart';
 
 import '../../main.dart';
 
-class ScanController extends GetxController {
-  MobileScannerController mobileScannerController = MobileScannerController(
-    torchEnabled: false,
-    facing: CameraFacing.back,
-  );
-}
-
 class ScannerPage extends StatefulWidget {
   ScannerPage({super.key});
 
@@ -29,13 +22,17 @@ class _ScannerPageState extends State<ScannerPage>
     with SingleTickerProviderStateMixin {
   final ImagePicker _picker = ImagePicker();
 
-  final ScanController scanController = Get.put(ScanController());
+  MobileScannerController mobileScannerController = MobileScannerController(
+    torchEnabled: false,
+    facing: CameraFacing.back,
+    detectionSpeed: DetectionSpeed.noDuplicates,
+  );
   RxDouble zoomFactor = 0.0.obs;
   BannerAd? belowScannerBanner;
   @override
   void initState() {
     belowScannerBanner = BannerAd(
-        size: AdSize.banner,
+        size: AdSize.mediumRectangle,
         adUnitId: 'ca-app-pub-8262174744018997/3415600822',
         listener: BannerAdListener(
           onAdFailedToLoad: (ad, error) {
@@ -87,8 +84,7 @@ class _ScannerPageState extends State<ScannerPage>
                       borderRadius: BorderRadius.circular(50)),
                   child: InkWell(
                     child: ValueListenableBuilder(
-                      valueListenable:
-                          scanController.mobileScannerController.torchState,
+                      valueListenable: mobileScannerController.torchState,
                       builder: (context, state, child) {
                         switch (state) {
                           case TorchState.off:
@@ -126,8 +122,7 @@ class _ScannerPageState extends State<ScannerPage>
                         }
                       },
                     ),
-                    onTap: () =>
-                        scanController.mobileScannerController.toggleTorch(),
+                    onTap: () => mobileScannerController.toggleTorch(),
                   ),
                 ),
                 Container(
@@ -142,8 +137,7 @@ class _ScannerPageState extends State<ScannerPage>
                             source: ImageSource.gallery,
                           );
                           if (pickedFile != null) {
-                            final resp = await scanController
-                                .mobileScannerController
+                            final resp = await mobileScannerController
                                 .analyzeImage(pickedFile.path);
                             if (!resp) {
                               showSnackbar(
@@ -187,11 +181,10 @@ class _ScannerPageState extends State<ScannerPage>
                     height: size.maxWidth - 40,
                     width: size.maxWidth - 40,
                     child: MobileScanner(
-                      controller: scanController.mobileScannerController,
+                      controller: mobileScannerController,
                       onDetect: (barcode) async {
                         if (barcode.barcodes.first.rawValue != null) {
                           // final String code = barcode.rawValue!;
-                          scanController.mobileScannerController.stop();
 
                           final now = DateTime.now();
 
@@ -210,7 +203,7 @@ class _ScannerPageState extends State<ScannerPage>
                                     id: 0,
                                   ),
                               transition: Transition.rightToLeft);
-                          scanController.mobileScannerController.start();
+                          mobileScannerController.start();
                         }
                       },
                     )),
@@ -232,8 +225,7 @@ class _ScannerPageState extends State<ScannerPage>
                         activeColor: AppColors.primary,
                         onChanged: (value) {
                           zoomFactor.value = value;
-                          scanController.mobileScannerController
-                              .setZoomScale(value);
+                          mobileScannerController.setZoomScale(value);
                         },
                       )),
                 ),

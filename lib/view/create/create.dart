@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,10 +7,12 @@ import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:qrscan/main.dart';
 import 'package:qrscan/styles/app_colors.dart';
+import 'package:qrscan/styles/overlays.dart';
 import 'package:qrscan/view/create/controller.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:syncfusion_flutter_barcodes/barcodes.dart';
+import 'package:uuid/uuid.dart';
 
 class CreateQrCode extends StatefulWidget {
   const CreateQrCode({super.key});
@@ -22,12 +25,14 @@ class _CreateQrCodeState extends State<CreateQrCode> {
   final CreateQrController controller = Get.put(CreateQrController());
   ScreenshotController screenshotController = ScreenshotController();
   BannerAd? belowCreateBanner;
+  final Uuid uuid = Uuid();
+
   @override
   void initState() {
     controller.qrText.text = controller.qrValue.value;
 
     belowCreateBanner = BannerAd(
-        size: AdSize.largeBanner,
+        size: AdSize.mediumRectangle,
         adUnitId: 'ca-app-pub-8262174744018997/2244336999',
         listener: BannerAdListener(
           onAdFailedToLoad: (ad, error) {
@@ -211,15 +216,15 @@ class _CreateQrCodeState extends State<CreateQrCode> {
                           Row(
                             children: [
                               Expanded(
-                                child: Container(
-                                  alignment: AlignmentDirectional.center,
-                                  height: 56,
-                                  decoration: BoxDecoration(),
-                                  child: InkWell(
-                                    onTap: () {
-                                      controller.qrText.clear();
-                                      controller.qrValue.value = '';
-                                    },
+                                child: InkWell(
+                                  onTap: () {
+                                    controller.qrText.clear();
+                                    controller.qrValue.value = '';
+                                  },
+                                  child: Container(
+                                    alignment: AlignmentDirectional.center,
+                                    height: 56,
+                                    decoration: BoxDecoration(),
                                     child: Text(
                                       'Cancel',
                                       style: soraBold.copyWith(
@@ -238,101 +243,115 @@ class _CreateQrCodeState extends State<CreateQrCode> {
                                 ),
                               ),
                               Expanded(
-                                child: Container(
-                                  alignment: AlignmentDirectional.center,
-                                  height: 56,
-                                  decoration: BoxDecoration(),
-                                  child: Obx(() => InkWell(
-                                        onTap: () async {
-                                          if (controller
-                                              .qrValue.value.isNotEmpty) {
-                                            await screenshotController
-                                                .captureFromWidget(Obx(
-                                              () => Container(
-                                                padding: EdgeInsets.all(24),
-                                                color: AppColors.white,
-                                                child: Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.start,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  mainAxisSize:
-                                                      MainAxisSize.min,
-                                                  children: [
-                                                    Obx(() => Container(
-                                                          padding:
-                                                              EdgeInsets.all(8),
-                                                          decoration: BoxDecoration(
-                                                              color: controller
-                                                                  .bgColor
-                                                                  .value,
-                                                              borderRadius:
-                                                                  BorderRadius
-                                                                      .circular(
-                                                                          14)),
-                                                          child: Container(
-                                                            height: 160,
-                                                            width: 160,
-                                                            padding:
-                                                                EdgeInsets.all(
-                                                                    6),
-                                                            decoration: BoxDecoration(
-                                                                color: AppColors
-                                                                    .white,
-                                                                borderRadius:
-                                                                    BorderRadius
-                                                                        .circular(
-                                                                            10)),
-                                                            child: sfQR,
-                                                          ),
-                                                        )),
-                                                    Text(
-                                                      controller.qrValue.value,
-                                                      style: soraBold.copyWith(
-                                                          fontSize: 14,
-                                                          color:
-                                                              AppColors.dark),
-                                                    ),
-                                                  ],
+                                child: Obx(
+                                  () => InkWell(
+                                    onTap: () async {
+                                      if (controller.qrValue.value.isNotEmpty) {
+                                        showLoader(text: 'Saving QR-Code');
+                                        await screenshotController
+                                            .captureFromWidget(Obx(
+                                          () => Container(
+                                            padding: EdgeInsets.all(24),
+                                            color: AppColors.white,
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.start,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.center,
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Obx(() => Container(
+                                                      padding:
+                                                          EdgeInsets.all(8),
+                                                      decoration: BoxDecoration(
+                                                          color: controller
+                                                              .bgColor.value,
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(
+                                                                      14)),
+                                                      child: Container(
+                                                        height: 160,
+                                                        width: 160,
+                                                        padding:
+                                                            EdgeInsets.all(6),
+                                                        decoration: BoxDecoration(
+                                                            color:
+                                                                AppColors.white,
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        10)),
+                                                        child: sfQR,
+                                                      ),
+                                                    )),
+                                                Text(
+                                                  controller.qrValue.value,
+                                                  textAlign: TextAlign.center,
+                                                  style: soraBold.copyWith(
+                                                      fontSize: 14,
+                                                      color: AppColors.dark),
                                                 ),
-                                              ),
-                                            ))
-                                                .then((Uint8List? image) async {
-                                              if (image != null) {
-                                                final directory =
-                                                    await getApplicationDocumentsDirectory();
-                                                final imagePath = await File(
-                                                        '${directory.path}/${controller.qrValue.value}.png')
-                                                    .create();
-                                                await imagePath
-                                                    .writeAsBytes(image);
+                                              ],
+                                            ),
+                                          ),
+                                        ))
+                                            .then((Uint8List? image) async {
+                                          if (image != null) {
+                                            final fileName = uuid.v4();
+                                            final directory =
+                                                await getApplicationDocumentsDirectory();
+                                            final imagePath = await File(
+                                                    '${directory.path}/$fileName.png')
+                                                .create();
+                                            await imagePath.writeAsBytes(image);
+                                            hideLoader();
+                                            showSnackbar(
+                                                snackbarStatus:
+                                                    MySnackbarStatus.success,
+                                                title: 'Code saved',
+                                                msg: imagePath.path,
+                                                milliseconds: 4000);
+                                            await Share.shareXFiles(
+                                                [XFile(imagePath.path)]);
 
-                                                await Share.shareXFiles(
-                                                    [XFile(imagePath.path)]);
-                                                final now = DateTime.now();
-                                                await myDatabase
-                                                    .transaction((txn) async {
-                                                  await txn.rawInsert(
-                                                      "INSERT INTO AllScans(dateTime,codeFormat,result,colorHxDVal) VALUES ( '${now.toIso8601String()}', 'qrcode','${controller.qrValue.value}','${controller.bgColor.value.toString().substring(6, 16)}' )");
-                                                });
-                                              }
+                                            final now = DateTime.now();
+                                            await myDatabase
+                                                .transaction((txn) async {
+                                              await txn.rawInsert(
+                                                  "INSERT INTO AllScans(dateTime,codeFormat,result,colorHxDVal) VALUES ( '${now.toIso8601String()}', 'qrcode','${controller.qrValue.value}','${controller.bgColor.value.toString().substring(6, 16)}' )");
                                             });
-                                            controller.qrText.clear();
-                                            controller.qrValue.value = '';
                                           }
-                                        },
-                                        child: Text(
-                                          'Save',
-                                          style: soraBold.copyWith(
-                                              fontSize: 16,
-                                              color: controller
-                                                      .qrValue.value.isNotEmpty
-                                                  ? Color(0xff2db67e)
-                                                  : AppColors.grey),
-                                        ),
-                                      )),
+                                        }).onError((error, stackTrace) {
+                                          hideLoader();
+                                          showSnackbar(
+                                              snackbarStatus:
+                                                  MySnackbarStatus.error,
+                                              title: 'Error saving qrcode',
+                                              msg: error.toString(),
+                                              milliseconds: 3000);
+                                        });
+                                        controller.qrText.clear();
+                                        controller.qrValue.value = '';
+                                      }
+                                    },
+                                    child: Container(
+                                      alignment: AlignmentDirectional.center,
+                                      height: 56,
+                                      decoration: BoxDecoration(),
+                                      child: Text(
+                                        'Save',
+                                        style: soraBold.copyWith(
+                                            fontSize: 16,
+                                            color: controller
+                                                    .qrValue.value.isNotEmpty
+                                                ? Color(0xff2db67e)
+                                                : AppColors.grey),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              )
                             ],
                           )
                         ],
