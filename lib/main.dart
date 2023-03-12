@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_web_browser/flutter_web_browser.dart';
 import 'package:get/get.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:qrscan/styles/app_colors.dart';
 import 'package:qrscan/view/home/home.dart';
 
 import 'package:sqflite/sqflite.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 late Database myDatabase;
 BannerAd resultBanner = BannerAd(
@@ -59,8 +60,13 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
-Future<void> openUrl({required Uri url}) async {
-  if (!await launchUrl(url)) {
-    throw Exception('Could not launch $url');
-  }
+Future<void> openUrl({required String url}) async {
+  await FlutterWebBrowser.openWebPage(
+    url: url,
+    customTabsOptions: CustomTabsOptions(
+        defaultColorSchemeParams: CustomTabsColorSchemeParams(
+      toolbarColor: AppColors.primary,
+      navigationBarColor: AppColors.transparent,
+    )),
+  );
 }

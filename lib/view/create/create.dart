@@ -284,7 +284,7 @@ class _CreateQrCodeState extends State<CreateQrCode> {
                                                                         10)),
                                                         child: sfQR,
                                                       ),
-                                                    )),
+                                                    )).marginOnly(bottom: 12),
                                                 Text(
                                                   controller.qrValue.value,
                                                   textAlign: TextAlign.center,

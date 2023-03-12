@@ -9,7 +9,7 @@ import 'package:qrscan/view/scan/scan.dart';
 
 class HomePage extends StatelessWidget {
   HomePage({super.key});
-  final RxInt currentIndex = 2.obs;
+  final RxInt currentIndex = 0.obs;
 
   final pages = [
     CreateQrCode(),

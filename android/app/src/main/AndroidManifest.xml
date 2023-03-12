@@ -12,6 +12,7 @@
     <action android:name="android.intent.action.VIEW" />
     <data android:scheme="tel" />
   </intent>
+  
    <intent>
         <action android:name="android.intent.action.VIEW" />
         <category android:name="android.intent.category.BROWSABLE" />
@@ -20,7 +21,8 @@
 </queries>
    <application
         android:label="QR Code"
-        android:name="${applicationName}"
+        android:name="${applicationName}" 
+        android:networkSecurityConfig="@xml/network_security_config"
         android:icon="@mipmap/ic_launcher">
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
